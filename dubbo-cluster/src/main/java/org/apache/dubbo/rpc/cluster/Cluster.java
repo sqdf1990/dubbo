@@ -27,7 +27,8 @@ import org.apache.dubbo.rpc.cluster.support.FailoverCluster;
  * <p>
  * <a href="http://en.wikipedia.org/wiki/Computer_cluster">Cluster</a>
  * <a href="http://en.wikipedia.org/wiki/Fault-tolerant_system">Fault-Tolerant</a>
- *
+ * Cluster的目的是将多个Invoker伪装成一个Invoker，这样其他人只要关注Protocol层Invoker即可，加上Cluster或者去掉Cluster对其他层
+ * 都不会造成影响，因为只有一个提供者时，是不需要Cluster的。
  */
 @SPI(FailoverCluster.NAME)
 public interface Cluster {

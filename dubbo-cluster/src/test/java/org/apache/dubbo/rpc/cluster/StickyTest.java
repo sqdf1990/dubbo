@@ -69,7 +69,7 @@ public class StickyTest {
         invokers.add(invoker2);
 
         clusterinvoker = new StickyClusterInvoker<StickyTest>(dic);
-
+        //因为url中指定了负载均衡loadbalance=roundrobin，所以使用的是RoundRobinLoadBalance
         ExtensionLoader.resetExtensionLoader(LoadBalance.class);
     }
 

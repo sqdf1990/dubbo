@@ -596,6 +596,7 @@ public class ExtensionLoader<T> {
 
     @SuppressWarnings("unchecked")
     private T createExtension(String name) {
+        //根据名称获取扩展实现类
         Class<?> clazz = getExtensionClasses().get(name);
         if (clazz == null) {
             throw findException(name);
@@ -603,13 +604,18 @@ public class ExtensionLoader<T> {
         try {
             T instance = (T) EXTENSION_INSTANCES.get(clazz);
             if (instance == null) {
+                //通过反射创建扩展实现类的实例，然后放入缓存中
                 EXTENSION_INSTANCES.putIfAbsent(clazz, clazz.newInstance());
                 instance = (T) EXTENSION_INSTANCES.get(clazz);
             }
+            //注入依赖，类似Spring的依赖注入
+            //依赖注入可以参考org.apache.dubbo.common.extension.ExtensionLoaderTest.testInjectExtension方法
+            //InjectExtImpl类的setter方法
             injectExtension(instance);
             Set<Class<?>> wrapperClasses = cachedWrapperClasses;
             if (CollectionUtils.isNotEmpty(wrapperClasses)) {
                 for (Class<?> wrapperClass : wrapperClasses) {
+                    //将扩展对象包进wrapper对象中
                     instance = injectExtension((T) wrapperClass.getConstructor(type).newInstance(instance));
                 }
             }
@@ -634,6 +640,8 @@ public class ExtensionLoader<T> {
         try {
             for (Method method : instance.getClass().getMethods()) {
                 if (!isSetter(method)) {
+                    //不是setter方法就跳过
+                    //所谓的setter方法就是public的，方法名称用set开头，只有一个参数的方法。
                     continue;
                 }
                 /**
@@ -644,13 +652,16 @@ public class ExtensionLoader<T> {
                 }
                 Class<?> pt = method.getParameterTypes()[0];
                 if (ReflectUtils.isPrimitives(pt)) {
+                    //如果setter方法的唯一的一个参数类型是原始类型，就跳过
                     continue;
                 }
 
                 try {
+                    //获取setter方法的set后面的字符串，比如setName就返回name
                     String property = getSetterProperty(method);
                     Object object = objectFactory.getExtension(pt, property);
                     if (object != null) {
+                        //调用setter方法，将符合条件的扩展对象set(注入)进去
                         method.invoke(instance, object);
                     }
                 } catch (Exception e) {
@@ -788,6 +799,7 @@ public class ExtensionLoader<T> {
             if (urls != null) {
                 while (urls.hasMoreElements()) {
                     java.net.URL resourceURL = urls.nextElement();
+                    //根据资源URL获取资源的内容，加载为Class
                     loadResource(extensionClasses, classLoader, resourceURL, excludedPackages);
                 }
             }
@@ -797,6 +809,13 @@ public class ExtensionLoader<T> {
         }
     }
 
+    /**
+     * 通过类加载器加载文件，获取输入流，一行一行读取，每一行都对空格和注释(#开头)进行了处理
+     * @param extensionClasses
+     * @param classLoader
+     * @param resourceURL
+     * @param excludedPackages
+     */
     private void loadResource(Map<String, Class<?>> extensionClasses, ClassLoader classLoader,
                               java.net.URL resourceURL, String... excludedPackages) {
         try {

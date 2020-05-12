@@ -274,7 +274,7 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
          * The {@link AnnotationAttributes} of @Service annotation
          */
         AnnotationAttributes serviceAnnotationAttributes = getAnnotationAttributes(service, false, false);
-
+        //获取类上面的@Service(interfaceClass=XX.class)中的XX.class
         Class<?> interfaceClass = resolveServiceInterfaceClass(serviceAnnotationAttributes, beanClass);
 
         String annotatedServiceBeanName = beanDefinitionHolder.getBeanName();

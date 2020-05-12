@@ -22,7 +22,7 @@ import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 
 /**
- *
+ * 动态配置中心  http://dubbo.apache.org/zh-cn/docs/user/configuration/config-center.html
  */
 public class ZookeeperDynamicConfigurationFactory extends AbstractDynamicConfigurationFactory {
 

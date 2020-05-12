@@ -860,12 +860,16 @@ public class DubboBootstrap extends GenericEventListener {
         metadataServiceExporter.unexport();
     }
 
+    /**
+     * 集中导出所有的ServiceConfig
+     */
     private void exportServices() {
         configManager.getServices().forEach(sc -> {
             // TODO, compatible with ServiceConfig.export()
             ServiceConfig serviceConfig = (ServiceConfig) sc;
             serviceConfig.setBootstrap(this);
 
+            //异步导出
             if (exportAsync) {
                 ExecutorService executor = executorRepository.getServiceExporterExecutor();
                 Future<?> future = executor.submit(() -> {
@@ -873,6 +877,7 @@ public class DubboBootstrap extends GenericEventListener {
                 });
                 asyncExportingFutures.add(future);
             } else {
+                //非异步导出
                 sc.export();
                 exportedServices.add(sc);
             }

@@ -137,6 +137,7 @@ public class AdaptiveClassCodeGenerator {
 
     /**
      * get index of parameter with type URL
+     * 判断方法的参数中有没有类型是URL的，有的话返回URL参数在整个参数列表中的下标位置，没有的话返回-1。
      */
     private int getUrlTypeIndex(Method method) {
         int urlTypeIndex = -1;

@@ -62,6 +62,10 @@ public class ExtensionLoader_Adaptive_Test {
 
             String echo = ext.echo(url, "haha");
             assertEquals("Ext1Impl1-echo", echo);
+            // bang方法会报错java.lang.UnsupportedOperationException: The method public abstract
+            // java.lang.String org.apache.dubbo.common.extension.ext1.SimpleExt.bang(org.apache.dubbo.common.URL,int)
+            // of interface org.apache.dubbo.common.extension.ext1.SimpleExt is not adaptive method!
+//            ext.bang(url, 2);
         }
 
         {

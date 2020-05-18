@@ -1009,6 +1009,9 @@ public class ExtensionLoader<T> {
 
     /**
      * 创建自适应扩展类的Class对象
+     * 配置文件中有AdaptiveExtensionClass的type不会走到这儿，比如org.apache.dubbo.common.compiler.Compiler这个type
+     * 因为在loadDirectory->loadResource->loadClass方法里面已经找到了AdaptiveCompiler，并且会保存到cachedAdaptiveClass实例变量中
+     * 在保存的时候会检查cacheAdaptiveClass是否为空，如果不为空，说明已经有了一个AdaptiveExtensionClass了，不允许同一个类型的扩展类有超过一个Adaptive扩展类
      * @return
      */
     private Class<?> createAdaptiveExtensionClass() {

@@ -102,7 +102,9 @@ public class ExtensionLoader<T> {
     private volatile Class<?> cachedAdaptiveClass = null;
     private String cachedDefaultName;
     private volatile Throwable createAdaptiveInstanceError;
-
+    /**
+     * 在loadDirectory->loadResource->loadClass的时候会把给定type对应的文件中的WrapperClass读取出来缓存起来
+     */
     private Set<Class<?>> cachedWrapperClasses;
 
     private Map<String, IllegalStateException> exceptions = new ConcurrentHashMap<>();
@@ -401,6 +403,7 @@ public class ExtensionLoader<T> {
         if (instance == null) {
             synchronized (holder) {
                 instance = holder.get();
+                //双重检查
                 if (instance == null) {
                     instance = createExtension(name);
                     holder.set(instance);
@@ -611,17 +614,20 @@ public class ExtensionLoader<T> {
                 EXTENSION_INSTANCES.putIfAbsent(clazz, clazz.newInstance());
                 instance = (T) EXTENSION_INSTANCES.get(clazz);
             }
-            //注入依赖，类似Spring的依赖注入
+            //注入依赖，类似Spring的依赖注入IoC
             //依赖注入可以参考org.apache.dubbo.common.extension.ExtensionLoaderTest.testInjectExtension方法
             //InjectExtImpl类的setter方法
             injectExtension(instance);
+            //找到读取SPI文件时候保存的WrapperClass，WrapperClass的作用有点像Spring AOP中的Advice
             Set<Class<?>> wrapperClasses = cachedWrapperClasses;
             if (CollectionUtils.isNotEmpty(wrapperClasses)) {
                 for (Class<?> wrapperClass : wrapperClasses) {
-                    //将扩展对象包进wrapper对象中
+                    //将扩展对象包进wrapper对象中，并且对Wrapper对象也注入依赖
+                    //类似AOP的"织入"逻辑
                     instance = injectExtension((T) wrapperClass.getConstructor(type).newInstance(instance));
                 }
             }
+            //如果instance的类实现了Lifecycle接口，就调用它的initialize方法
             initExtension(instance);
             return instance;
         } catch (Throwable t) {
@@ -635,7 +641,8 @@ public class ExtensionLoader<T> {
     }
 
     private T injectExtension(T instance) {
-
+        //因为后面要从objectFactory中拿到依赖对象进行注入，如果objectFactory是空，则直接返回instance。
+        //ExtensionFactory类型的ExtensionLoader的objectFactory就是null，可以从ExtensionLoader的构造方法中看出来
         if (objectFactory == null) {
             return instance;
         }
